@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { formatInTimeZone } from 'date-fns-tz'
 import { groupSlotsByShift, type ShiftGroup } from '@/lib/utils/shifts'
 import ShiftTab from './ShiftTab'
@@ -100,6 +100,20 @@ export default function AvailabilityGrid({
       if (!allTimeKeys.has(label)) allTimeKeys.set(label, new Date(slot.startTime))
     }
   }
+
+  // Map each shift label ID to ALL its associated slot IDs across the whole session.
+  // This ensures that clicking a shift bar highlights the entire shift, even if split across days/gaps.
+  const labelToAllSlotIds = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const slot of timeSlots) {
+      if (slot.labelId) {
+        const arr = map.get(slot.labelId) ?? []
+        arr.push(slot.id)
+        map.set(slot.labelId, arr)
+      }
+    }
+    return map
+  }, [timeSlots])
 
   const sortedEntries = Array.from(allTimeKeys.entries()).sort(([, a], [, b]) => {
     const aHH = formatInTimeZone(a, timezone, 'HH:mm')
@@ -361,15 +375,18 @@ export default function AvailabilityGrid({
                     <div key={si}>
                       {seg.groups.map((group, gi) => (
                         <div key={gi} className="flex">
-                          {group.label ? (
-                            <ShiftTab
-                              label={group.label}
-                              slotIds={group.slots.map(s => s.id)}
-                              cellHeight={slotH}
-                              onClick={handleShiftTabClick}
-                              active={group.slots.every(s => selectedSlotIds.has(s.id))}
-                            />
-                          ) : (
+                          {group.label ? (() => {
+                            const allIds = labelToAllSlotIds.get(group.label.id) || group.slots.map(s => s.id)
+                            return (
+                              <ShiftTab
+                                label={group.label}
+                                slotIds={group.slots.map(s => s.id)}
+                                cellHeight={slotH}
+                                onClick={() => handleShiftTabClick(allIds)}
+                                active={allIds.every(id => selectedSlotIds.has(id))}
+                              />
+                            )
+                          })() : (
                             <div style={{ width: 20 }} className="shrink-0" />
                           )}
                           <div className="flex flex-col">
