@@ -105,8 +105,14 @@ export default function SessionForm({ onSuccess }: SessionFormProps) {
     }
   }
 
+  function blockEnterSubmit(e: React.KeyboardEvent<HTMLFormElement>) {
+    if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON') {
+      e.preventDefault()
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={blockEnterSubmit} noValidate className="space-y-8">
 
       {/* Title */}
       <div>
