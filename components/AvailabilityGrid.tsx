@@ -113,6 +113,9 @@ export default function AvailabilityGrid({
     ? new Date(timeSlots[0].endTime).getTime() - new Date(timeSlots[0].startTime).getTime()
     : 30 * 60 * 1000
   const granularityMin = granularityMs / 60000
+  // slotH: visual height per slot cell, scaled so 30 min = CELL_H.
+  // 15-min granularity → CELL_H/2, 60-min → CELL_H*2, etc.
+  const slotH = Math.round(CELL_H * (granularityMin / 30))
 
   // Detect which spine indices are followed by a time jump > one granularity step.
   // "gapAfterIdx[i]" means there's a visible time jump between timeLabels[i] and [i+1].
@@ -163,7 +166,7 @@ export default function AvailabilityGrid({
     return (
       <div
         key={slot.id}
-        style={{ height: CELL_H, width: 36, ...inlineStyle }}
+        style={{ height: slotH, width: 36, ...inlineStyle }}
         className={`border border-white/60 cursor-pointer transition-colors ${mode === 'input' ? bg : ''}`}
         onMouseDown={() => handleCellMouseDown(slot.id)}
         onMouseEnter={(e) => handleCellMouseEnter(e, slot.id)}
@@ -298,7 +301,7 @@ export default function AvailabilityGrid({
                 {/* Label top-aligned to the start of the slot box */}
                 <div
                   key={`lbl-${i}`}
-                  style={{ height: CELL_H }}
+                  style={{ height: slotH }}
                   className="flex items-start justify-end pr-2 pt-0.5 text-xs font-medium text-dse-beige-dark whitespace-nowrap"
                 >
                   {label}
@@ -342,7 +345,7 @@ export default function AvailabilityGrid({
 
                 {segments.map((seg, si) => {
                   if (seg.type === 'hatch') {
-                    return <div key={si}>{hatchBlock(seg.count * CELL_H)}</div>
+                    return <div key={si}>{hatchBlock(seg.count * slotH)}</div>
                   }
                   if (seg.type === 'gap') {
                     // Thin dashed separator — same height as label column gap row
@@ -362,7 +365,7 @@ export default function AvailabilityGrid({
                             <ShiftTab
                               label={group.label}
                               slotIds={group.slots.map(s => s.id)}
-                              cellHeight={CELL_H}
+                              cellHeight={slotH}
                               onClick={handleShiftTabClick}
                               active={group.slots.every(s => selectedSlotIds.has(s.id))}
                             />

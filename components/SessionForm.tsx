@@ -212,6 +212,7 @@ export default function SessionForm({ onSuccess }: SessionFormProps) {
             dates={Array.from(dates).sort()}
             timeRange={timeRange}
             timezone={watch('timezone')}
+            granularity={parseInt(watch('granularity')) as 15 | 30 | 60}
             shifts={shifts}
             onChange={setShifts}
           />

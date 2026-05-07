@@ -15,13 +15,14 @@ interface VisualShiftBuilderProps {
   dates: string[]
   timeRange: [number, number]
   timezone: string
+  granularity: 15 | 30 | 60
   shifts: ShiftDraft[]
   onChange: (shifts: ShiftDraft[]) => void
 }
 
 const CELL_H = 24
 
-export default function VisualShiftBuilder({ dates, timeRange, timezone, shifts, onChange }: VisualShiftBuilderProps) {
+export default function VisualShiftBuilder({ dates, timeRange, timezone, granularity, shifts, onChange }: VisualShiftBuilderProps) {
   const [selectedSlotIds, setSelectedSlotIds] = useState<Set<string>>(new Set())
   const dragRef = useRef<{ toggling: boolean } | null>(null)
   
@@ -39,14 +40,17 @@ export default function VisualShiftBuilder({ dates, timeRange, timezone, shifts,
     return generateTimeSlots({
       dates,
       timeRange: { start: `${startH}:${startM.toString().padStart(2, '0')}`, end: `${endH}:${endM.toString().padStart(2, '0')}` },
-      granularity: 30, // Default for shift builder visual
+      granularity,
       timezone
     }).map(s => ({
       id: s.startTime.toISOString(),
       startTime: s.startTime.toISOString(),
       endTime: s.endTime.toISOString(),
     }))
-  }, [dates, timeRange, timezone])
+  }, [dates, timeRange, timezone, granularity])
+
+  // slotH: visual height scaled so 30 min = CELL_H (same logic as AvailabilityGrid)
+  const slotH = Math.round(CELL_H * (granularity / 30))
 
   // Group by day
   const days = useMemo(() => {
@@ -116,7 +120,7 @@ export default function VisualShiftBuilder({ dates, timeRange, timezone, shifts,
           <div className="flex flex-col mr-2 shrink-0">
             <div style={{ height: 24 }} />
             {timeLabels.map((label, i) => (
-              <div key={i} style={{ height: CELL_H }} className="flex items-center justify-end pr-2 text-[10px] font-medium text-dse-beige-dark whitespace-nowrap">
+              <div key={i} style={{ height: slotH }} className="flex items-center justify-end pr-2 text-[10px] font-medium text-dse-beige-dark whitespace-nowrap">
                 {label}
               </div>
             ))}
@@ -155,7 +159,7 @@ export default function VisualShiftBuilder({ dates, timeRange, timezone, shifts,
                     return (
                       <div
                         key={slot.id}
-                        style={{ height: CELL_H, width: 32, ...inlineStyle }}
+                        style={{ height: slotH, width: 32, ...inlineStyle }}
                         className={`border border-white/60 cursor-pointer transition-colors ${bg} hover:opacity-80`}
                         onMouseDown={(e) => handleMouseDown(e, slot.id)}
                         onMouseEnter={() => handleMouseEnter(slot.id)}
