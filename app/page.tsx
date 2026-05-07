@@ -53,10 +53,22 @@ export default function LandingPage() {
           <span className="font-display text-xl font-extrabold text-dse-beige">slam.fit</span>
           <div className="flex items-center gap-3">
             {user ? (
-              <a href="/dashboard" className="text-sm font-medium text-amber-500 hover:text-amber-400 transition">
-                My sessions
-              </a>
-            ) : (
+                <div className="flex items-center gap-3">
+                  <a href="/dashboard" className="text-sm font-medium text-amber-500 hover:text-amber-400 transition">
+                    My sessions
+                  </a>
+                  <button
+                    onClick={async () => {
+                      const supabase = createClient()
+                      await supabase.auth.signOut()
+                      setUser(null)
+                    }}
+                    className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:border-white/40 transition"
+                  >
+                    Log out
+                  </button>
+                </div>
+              ) : (
               <form onSubmit={e => { e.preventDefault(); handleAuth(); }} className="flex items-center gap-2">
                 <div className="flex gap-2">
                   <input value={email} onChange={e => setEmail(e.target.value)}
@@ -66,12 +78,13 @@ export default function LandingPage() {
                     placeholder="Password" type="password" required
                     className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-amber-500 w-32 sm:w-40" />
                 </div>
-                <div className="flex flex-col items-start justify-center">
+                <div className="flex items-center gap-2">
                   <button type="submit" disabled={loading}
-                    className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-[#18252D] hover:bg-amber-400 disabled:opacity-60 transition w-full">
+                    className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-[#18252D] hover:bg-amber-400 disabled:opacity-60 transition">
                     {loading ? '…' : (authMode === 'login' ? 'Log in' : 'Sign up')}
                   </button>
-                  <button type="button" onClick={() => setAuthMode(m => m === 'login' ? 'signup' : 'login')} className="text-[10px] text-white/50 hover:text-white transition whitespace-nowrap mt-1 mx-auto">
+                  <button type="button" onClick={() => setAuthMode(m => m === 'login' ? 'signup' : 'login')}
+                    className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-[#18252D] hover:bg-amber-400 transition whitespace-nowrap ml-0">
                     {authMode === 'login' ? 'Create account' : 'Have account?'}
                   </button>
                 </div>
