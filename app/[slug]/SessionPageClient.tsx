@@ -238,27 +238,7 @@ export default function SessionPageClient({ data }: { data: SessionPageData }) {
                 )}
               </div>
 
-              {/* Join / Edit form */}
-              {!session.isClosed && viewMode === 'input' && (
-                <div className="mb-6 rounded-xl border border-dse-teal/30 bg-dse-teal/5 p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-display font-extrabold text-base text-dse-teal">{hasJoined ? 'Edit your details' : 'Join this session'}</h2>
-                  </div>
-                  <p className="text-xs text-dse-beige-dark mb-4">
-                    Click cells in the grid below to mark your available times, then enter your name and hit Save.
-                  </p>
-                  <JoinForm
-                    sessionSlug={session.slug}
-                    roles={roles}
-                    rolesRequired={session.rolesRequired}
-                    selectedSlotIds={selectedSlotIds}
-                    onSuccess={handleJoinSuccess}
-                    participantToken={hasJoined ? localStorage.getItem(`participantToken:${session.slug}`) || undefined : undefined}
-                    initialName={hasJoined ? localParticipants.find(p => p.id === localStorage.getItem(`participantId:${session.slug}`))?.name : undefined}
-                    initialRoleIds={hasJoined ? localParticipants.find(p => p.id === localStorage.getItem(`participantId:${session.slug}`))?.roles.map(r => r.id) : undefined}
-                  />
-                </div>
-              )}
+
 
               {/* Grid */}
               <AvailabilityGrid
@@ -288,17 +268,38 @@ export default function SessionPageClient({ data }: { data: SessionPageData }) {
                   />
                 </div>
               )}
-              <div className="rounded-xl border border-white/10 bg-white/5 shadow-sm overflow-hidden">
-                <ParticipantSidebar
-                  participants={localParticipants}
-                  matchingParticipants={activeParticipantsForGrid}
-                  totalSlotCount={timeSlots.length}
-                  selectedRoleIds={selectedRoleIds}
-                  isPublic={session.isPublic}
-                  selectedParticipantIds={selectedParticipantFilter}
-                  onParticipantSelectionChange={setSelectedParticipantFilter}
-                />
-              </div>
+              {effectiveGridMode === 'input' && !session.isClosed ? (
+                <div className="rounded-xl border border-dse-teal/30 bg-dse-teal/5 p-5 shadow-sm">
+                  <h2 className="font-display font-extrabold text-base text-dse-teal mb-1">
+                    {hasJoined ? 'Edit your details' : 'Join this session'}
+                  </h2>
+                  <p className="text-xs text-dse-beige-dark mb-4">
+                    Click cells in the grid to mark your available times, then enter your name and hit Save.
+                  </p>
+                  <JoinForm
+                    sessionSlug={session.slug}
+                    roles={roles}
+                    rolesRequired={session.rolesRequired}
+                    selectedSlotIds={selectedSlotIds}
+                    onSuccess={handleJoinSuccess}
+                    participantToken={hasJoined ? localStorage.getItem(`participantToken:${session.slug}`) || undefined : undefined}
+                    initialName={hasJoined ? localParticipants.find(p => p.id === localStorage.getItem(`participantId:${session.slug}`))?.name : undefined}
+                    initialRoleIds={hasJoined ? localParticipants.find(p => p.id === localStorage.getItem(`participantId:${session.slug}`))?.roles.map(r => r.id) : undefined}
+                  />
+                </div>
+              ) : (
+                <div className="rounded-xl border border-white/10 bg-white/5 shadow-sm overflow-hidden">
+                  <ParticipantSidebar
+                    participants={localParticipants}
+                    matchingParticipants={activeParticipantsForGrid}
+                    totalSlotCount={timeSlots.length}
+                    selectedRoleIds={selectedRoleIds}
+                    isPublic={session.isPublic}
+                    selectedParticipantIds={selectedParticipantFilter}
+                    onParticipantSelectionChange={setSelectedParticipantFilter}
+                  />
+                </div>
+              )}
             </aside>
           </div>
         </main>
